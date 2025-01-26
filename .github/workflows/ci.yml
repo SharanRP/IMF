@@ -77,14 +77,3 @@ jobs:
       env:
         NODE_ENV: ${{ matrix.environment }}
 
-    # - name: Deploy to Azure Web App
-    #   uses: azure/webapps-deploy@v2
-    #   with:
-    #     app-name: imf-gadget-api-${{ matrix.environment }}
-    #     publish-profile: ${{ secrets[format('AZURE_WEBAPP_PUBLISH_PROFILE_{0}', matrix.environment)] }}
-    #     package: .
-    #   env:
-    #     NODE_ENV: ${{ matrix.environment }}
-    #     DATABASE_URL: ${{ secrets[format('DATABASE_URL_{0}', matrix.environment)] }}
-    #     JWT_SECRET: ${{ secrets[format('JWT_SECRET_{0}', matrix.environment)] }}
-    #     BASE_URL: ${{ matrix.url }}
