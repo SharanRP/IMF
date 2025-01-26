@@ -10,6 +10,7 @@ A secure API for managing IMF's gadget inventory, built with Node.js, Express, P
 - Mission success probability calculation
 - Self-destruct sequence simulation
 - Status-based filtering
+- Multi-environment support (Development & Production)
 
 ## Prerequisites
 
@@ -17,18 +18,24 @@ A secure API for managing IMF's gadget inventory, built with Node.js, Express, P
 - PostgreSQL
 - npm or yarn
 
-## Setup
+## Environment Setup
+
+The API supports both development and production environments. Environment-specific configurations are managed through separate `.env` files.
+
+### Development Setup
 
 1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Set up your environment variables by copying the .env.example to .env and filling in your values:
+2. Create a `.env.development` file with your development environment variables:
 ```bash
-DATABASE_URL="postgresql://postgres:your_password@localhost:5432/imf_gadgets?schema=public"
-JWT_SECRET="your-super-secret-key-here"
-PORT=3000
+NODE_ENV=development
+PORT=3003
+DATABASE_URL="your-development-database-url"
+JWT_SECRET="your-development-secret"
+BASE_URL="http://localhost:3003"
 ```
 
 3. Initialize the database:
@@ -40,6 +47,33 @@ npx prisma migrate dev
 ```bash
 npm run dev
 ```
+
+### Production Setup
+
+1. Create a `.env.production` file with your production environment variables:
+```bash
+NODE_ENV=production
+PORT=3003
+DATABASE_URL="your-production-database-url"
+JWT_SECRET="your-production-secret"
+BASE_URL="https://imf-gadget-api.production.com"
+```
+
+2. Build and start the production server:
+```bash
+npm run build
+npm start
+```
+
+## Deployment
+
+The application is automatically deployed using GitHub Actions:
+
+- Push to `develop` branch -> Deploys to development environment
+- Push to `main` branch -> Deploys to production environment
+
+Development URL: https://dev-imf-gadget-api.azurewebsites.net
+Production URL: https://imf-gadget-api.azurewebsites.net
 
 ## API Endpoints
 
@@ -55,8 +89,17 @@ npm run dev
 - DELETE /gadgets/:id - Decommission a gadget
 - POST /gadgets/:id/self-destruct - Trigger self-destruct sequence
 
+### Health Check
+- GET /health - Check API status and environment
+
 ## Status Values
 - AVAILABLE
 - DEPLOYED
 - DESTROYED
 - DECOMMISSIONED
+
+## Documentation
+
+API documentation is available at:
+- Development: https://dev-imf-gadget-api.azurewebsites.net/api-docs
+- Production: https://imf-gadget-api.azurewebsites.net/api-docs

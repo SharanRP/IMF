@@ -1,10 +1,10 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   test:
@@ -43,16 +43,22 @@ jobs:
     - name: Run linting
       run: npm run lint
 
-    # - name: Run tests
-    #   run: npm test
-    #   env:
-    #     DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-    #     JWT_SECRET: test-secret
-    #     PORT: 3003
-
-  build:
+  build-and-deploy:
     needs: test
     runs-on: ubuntu-latest
+    
+    if: |
+      (github.ref == 'refs/heads/develop' && github.event_name == 'push') ||
+      (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    
+    strategy:
+      matrix:
+        environment: [development, production]
+        include:
+          - environment: development
+            url: 'https://dev-imf-gadget-api.azurewebsites.net'
+          - environment: production
+            url: 'https://imf-gadget-api.azurewebsites.net'
 
     steps:
     - uses: actions/checkout@v3
@@ -68,3 +74,17 @@ jobs:
 
     - name: Build
       run: npm run build
+      env:
+        NODE_ENV: ${{ matrix.environment }}
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: imf-gadget-api-${{ matrix.environment }}
+        publish-profile: ${{ secrets[format('AZURE_WEBAPP_PUBLISH_PROFILE_{0}', matrix.environment)] }}
+        package: .
+      env:
+        NODE_ENV: ${{ matrix.environment }}
+        DATABASE_URL: ${{ secrets[format('DATABASE_URL_{0}', matrix.environment)] }}
+        JWT_SECRET: ${{ secrets[format('JWT_SECRET_{0}', matrix.environment)] }}
+        BASE_URL: ${{ matrix.url }}

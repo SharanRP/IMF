@@ -1,30 +1,40 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import swaggerUi from 'swagger-ui-express';
-import { gadgetRoutes } from './routes/gadget.routes';
+import { config as dotenvConfig } from 'dotenv';
 import { authRoutes } from './routes/auth.routes';
+import { gadgetRoutes } from './routes/gadget.routes';
 import { authenticateToken } from './middleware/auth';
-import { specs } from './swagger';
+import swaggerUi from 'swagger-ui-express';
+import { specs as swaggerSpec } from './swagger';
+import config from './config';
 
-dotenv.config();
+dotenvConfig({
+  path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development',
+});
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    environment: process.env.NODE_ENV || 'development',
+    baseUrl: config.baseUrl,
+  });
+});
 
 app.use('/auth', authRoutes);
-
 app.use('/gadgets', authenticateToken, gadgetRoutes);
 
-if (process.env.NODE_ENV !== 'test') {
-  app.listen(port, () => {
-    console.log(`🚀 IMF Gadget API running on port ${port}`);
-    console.log(`📚 API Documentation available at http://localhost:${port}/api-docs`);
+if (require.main === module) {
+  app.listen(config.port, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
+    console.log(`API Documentation available at ${config.baseUrl}/api-docs`);
+    console.log(`Server listening on port ${config.port}`);
   });
 }
 
