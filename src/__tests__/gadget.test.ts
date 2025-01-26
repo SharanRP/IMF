@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import app from '../index';
 import { describe, expect, it, beforeAll, beforeEach, afterAll } from '@jest/globals';
 
@@ -78,7 +77,7 @@ describe('Gadget Routes', () => {
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBeTruthy();
-      res.body.forEach((gadget: any) => {
+      res.body.forEach((gadget: { status: string }) => {
         expect(gadget.status).toBe('AVAILABLE');
       });
     });

@@ -45,6 +45,18 @@ const Status = {
   DECOMMISSIONED: 'DECOMMISSIONED' as Status,
 };
 
+interface Gadget {
+  id: string;
+  name: string;
+  codename: string;
+  status: Status;
+  decommissionedAt?: Date;
+}
+
+interface GadgetWithProbability extends Gadget {
+  missionSuccessProbability: number;
+}
+
 const gadgetSchema = z.object({
   name: z.string().min(1),
 });
@@ -93,7 +105,7 @@ router.get('/', async (req, res) => {
     }
 
     const gadgets = await prisma.gadget.findMany({ where });
-    const gadgetsWithProbability = gadgets.map((gadget: any) => ({
+    const gadgetsWithProbability: GadgetWithProbability[] = gadgets.map((gadget: Gadget) => ({
       ...gadget,
       missionSuccessProbability: generateMissionSuccessProbability(),
     }));
