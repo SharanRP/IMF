@@ -1,4 +1,15 @@
+# Dependencies
 node_modules
+
+# Environment Files
 .env
-.env.production
+.env.*
+.env.local
+.env.*.local
 .env.development
+.env.production
+.env.test
+.env.*.test
+
+# System Files
+.DS_Store
