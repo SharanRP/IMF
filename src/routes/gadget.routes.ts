@@ -50,7 +50,9 @@ interface Gadget {
   name: string;
   codename: string;
   status: Status;
-  decommissionedAt?: Date;
+  decommissionedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface GadgetWithProbability extends Gadget {
