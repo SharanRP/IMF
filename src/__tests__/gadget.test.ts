@@ -6,19 +6,17 @@ import { describe, expect, it, beforeAll, beforeEach, afterAll } from '@jest/glo
 
 const prisma = new PrismaClient();
 
-jest.setTimeout(30000); 
+jest.setTimeout(30000);
 
 describe('Gadget Routes', () => {
   let token: string;
   let gadgetId: string;
 
   beforeAll(async () => {
-    const res = await request(app)
-      .post('/auth/register')
-      .send({
-        email: 'gadget.test@imf.com',
-        password: 'secret123',
-      });
+    const res = await request(app).post('/auth/register').send({
+      email: 'gadget.test@imf.com',
+      password: 'secret123',
+    });
     token = res.body.token;
   });
 
@@ -34,12 +32,9 @@ describe('Gadget Routes', () => {
 
   describe('POST /gadgets', () => {
     it('should create a new gadget', async () => {
-      const res = await request(app)
-        .post('/gadgets')
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          name: 'Test Gadget',
-        });
+      const res = await request(app).post('/gadgets').set('Authorization', `Bearer ${token}`).send({
+        name: 'Test Gadget',
+      });
 
       expect(res.status).toBe(201);
       expect(res.body).toHaveProperty('id');
@@ -49,11 +44,9 @@ describe('Gadget Routes', () => {
     });
 
     it('should not create a gadget without authentication', async () => {
-      const res = await request(app)
-        .post('/gadgets')
-        .send({
-          name: 'Test Gadget',
-        });
+      const res = await request(app).post('/gadgets').send({
+        name: 'Test Gadget',
+      });
 
       expect(res.status).toBe(401);
     });
@@ -71,9 +64,7 @@ describe('Gadget Routes', () => {
     });
 
     it('should get all gadgets', async () => {
-      const res = await request(app)
-        .get('/gadgets')
-        .set('Authorization', `Bearer ${token}`);
+      const res = await request(app).get('/gadgets').set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBeTruthy();
@@ -141,7 +132,6 @@ describe('Gadget Routes', () => {
 
   describe('POST /gadgets/:id/self-destruct', () => {
     beforeEach(async () => {
-      // Create a test gadget
       const createRes = await request(app)
         .post('/gadgets')
         .set('Authorization', `Bearer ${token}`)

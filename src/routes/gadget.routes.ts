@@ -42,7 +42,7 @@ const Status = {
   AVAILABLE: 'AVAILABLE' as Status,
   DEPLOYED: 'DEPLOYED' as Status,
   DESTROYED: 'DESTROYED' as Status,
-  DECOMMISSIONED: 'DECOMMISSIONED' as Status
+  DECOMMISSIONED: 'DECOMMISSIONED' as Status,
 };
 
 const gadgetSchema = z.object({
@@ -56,7 +56,7 @@ const generateCodename = () => {
 };
 
 const generateMissionSuccessProbability = () => {
-  return Math.floor(Math.random() * 41) + 60; 
+  return Math.floor(Math.random() * 41) + 60;
 };
 
 /**
@@ -87,17 +87,17 @@ router.get('/', async (req, res) => {
   try {
     const { status } = req.query;
     const where: { status?: Status } = {};
-    
+
     if (status && typeof status === 'string' && Object.values(Status).includes(status as Status)) {
       where.status = status as Status;
     }
-    
+
     const gadgets = await prisma.gadget.findMany({ where });
-    const gadgetsWithProbability = gadgets.map((gadget:any) => ({
+    const gadgetsWithProbability = gadgets.map((gadget: any) => ({
       ...gadget,
-      missionSuccessProbability: generateMissionSuccessProbability()
+      missionSuccessProbability: generateMissionSuccessProbability(),
     }));
-    
+
     res.json(gadgetsWithProbability);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve gadgets' });
@@ -130,15 +130,15 @@ router.post('/', async (req, res) => {
   try {
     const { name } = gadgetSchema.parse(req.body);
     const codename = generateCodename();
-    
+
     const gadget = await prisma.gadget.create({
       data: {
         name,
         codename,
-        status: Status.AVAILABLE
+        status: Status.AVAILABLE,
       },
     });
-    
+
     res.status(201).json(gadget);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -180,20 +180,20 @@ router.patch('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = gadgetSchema.partial().parse(req.body);
-    
+
     const existingGadget = await prisma.gadget.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingGadget) {
       return res.status(404).json({ error: 'Gadget not found' });
     }
-    
+
     const gadget = await prisma.gadget.update({
       where: { id },
       data: { name },
     });
-    
+
     res.json(gadget);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -228,15 +228,15 @@ router.patch('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const existingGadget = await prisma.gadget.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingGadget) {
       return res.status(404).json({ error: 'Gadget not found' });
     }
-    
+
     const gadget = await prisma.gadget.update({
       where: { id },
       data: {
@@ -244,7 +244,7 @@ router.delete('/:id', async (req, res) => {
         decommissionedAt: new Date(),
       },
     });
-    
+
     res.json(gadget);
   } catch (error) {
     res.status(500).json({ error: 'Failed to decommission gadget' });
@@ -290,7 +290,7 @@ router.post('/:id/self-destruct', async (req, res) => {
     const { confirmationCode } = req.body;
 
     const existingGadget = await prisma.gadget.findUnique({
-      where: { id }
+      where: { id },
     });
 
     if (!existingGadget) {
@@ -300,30 +300,28 @@ router.post('/:id/self-destruct', async (req, res) => {
     if (existingGadget.status === Status.DESTROYED) {
       return res.status(400).json({ error: 'Gadget is already destroyed' });
     }
-    
-    // If no confirmation code provided, generate and return one
+
     if (!confirmationCode) {
       const expectedCode = uuidv4().slice(0, 6);
       return res.json({ expectedCode });
     }
-    
-    // Verify the confirmation code matches the expected format
+
     if (!/^[0-9a-f]{6}$/.test(confirmationCode)) {
-      return res.status(400).json({ 
-        error: 'Invalid confirmation code format'
+      return res.status(400).json({
+        error: 'Invalid confirmation code format',
       });
     }
-    
+
     const gadget = await prisma.gadget.update({
       where: { id },
       data: {
         status: Status.DESTROYED,
       },
     });
-    
+
     res.json({
       message: 'Gadget self-destruct sequence completed',
-      gadget
+      gadget,
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to execute self-destruct sequence' });
