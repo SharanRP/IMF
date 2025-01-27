@@ -19,6 +19,14 @@ app.use(express.json());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+app.get('/', (req, res) => {
+  res.json({
+    message: 'IMF Gadget API is running',
+    environment: process.env.NODE_ENV || 'development',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -31,10 +39,11 @@ app.use('/auth', authRoutes);
 app.use('/gadgets', authenticateToken, gadgetRoutes);
 
 if (require.main === module) {
-  app.listen(config.port, () => {
+  const port = process.env.PORT || config.port || 3000;
+  app.listen(port, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode`);
     console.log(`API Documentation available at ${config.baseUrl}/api-docs`);
-    console.log(`Server listening on port ${config.port}`);
+    console.log(`Server listening on port ${port}`);
   });
 }
 
