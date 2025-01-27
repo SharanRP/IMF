@@ -101,5 +101,4 @@ Production URL: https://imf-gadget-api.azurewebsites.net
 ## Documentation
 
 API documentation is available at:
-- Development: https://dev-imf-gadget-api.azurewebsites.net/api-docs
-- Production: https://imf-gadget-api.azurewebsites.net/api-docs
+- Production:https://imf-production-5750.up.railway.app/api-docs
